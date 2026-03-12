@@ -32,7 +32,14 @@ class LitQwen3VL(pl.LightningModule):
         lora_config = LoraConfig(
             r=16,
             lora_alpha=32,  # Hệ số scale
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "proj", "qkv"],
+            target_modules=[
+                # Encoder
+                # "proj", "qkv",
+                # "linear_fc1", "linear_fc2",
+                # Decoder
+                "q_proj", "k_proj", "v_proj", "o_proj",
+                # "gate_proj", "up_proj", "down_proj"
+            ],
             lora_dropout=0.05,
             bias="none",
             task_type="CAUSAL_LM"
@@ -65,7 +72,7 @@ class LitQwen3VL(pl.LightningModule):
 
         generated_ids = self.model.generate(
             **model_inputs_gen,
-            max_new_tokens=128, num_beams=5, early_stopping=True, length_penalty=1.0
+            max_new_tokens=256, num_beams=5, early_stopping=True, length_penalty=1.0
         )
 
         generated_ids_trimmed = [
@@ -91,7 +98,7 @@ class LitQwen3VL(pl.LightningModule):
 
         generated_ids = self.model.generate(
             **model_inputs,
-            max_new_tokens=128, num_beams=5, early_stopping=True, length_penalty=1.0
+            max_new_tokens=256, num_beams=5, early_stopping=True, length_penalty=1.0
         )
 
         generated_ids_trimmed = [

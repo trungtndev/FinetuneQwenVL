@@ -5,15 +5,17 @@ from pytorch_lightning.loggers import WandbLogger as Logger
 
 from sconf import Config
 import pytorch_lightning as pl
-from pytorch_lightning.strategies import DDPStrategy
-
+from pytorch_lightning.strategies import (
+    DDPStrategy,
+    SingleDeviceStrategy,
+)
 from model import LitQwen3VL
 from dataset import CROHMEDatamodule
 from util import HFCheckpoint
 
-torch.set_float32_matmul_precision('high')
-torch.backends.cuda.matmul.allow_tf32 = True
-torch.backends.cudnn.allow_tf32 = True
+# torch.set_float32_matmul_precision('high')
+# torch.backends.cuda.matmul.allow_tf32 = True
+# torch.backends.cudnn.allow_tf32 = True
 # torch.cuda.set_per_process_memory_fraction(0.6, device=0)
 
 def train(config: Config):
@@ -32,7 +34,7 @@ def train(config: Config):
 
     trainer = pl.Trainer(
         **config.trainer,
-        strategy=DDPStrategy(find_unused_parameters=False),
+        strategy=SingleDeviceStrategy(device="cuda:0"),
         # logger=logger,
         callbacks=[lr_callback, checkpoint_callback],
     )
