@@ -1,0 +1,39 @@
+seed_everything: 7
+trainer:
+  enable_checkpointing: true
+  accelerator: gpu
+  check_val_every_n_epoch: 2
+  max_epochs: 300
+  deterministic: true
+  num_sanity_val_steps: 0
+
+callbacks:
+  - class_path: pytorch_lightning.callbacks.LearningRateMonitor
+    init_args:
+      logging_interval: epoch
+  - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+    init_args:
+      save_top_k: 1
+      monitor: val_ExpRate
+      mode: max
+      filename: '{epoch}-{step}-{val_ExpRate:.4f}'
+
+wandb:
+ name:
+ project: "HMER"
+ log_model: "all"
+
+model:
+  model_name_or_path: "Qwen/Qwen3-VL-2B-Instruct"
+  # training
+  train_config:
+    learning_rate: 0.0002
+    patience: 4
+
+data:
+  zipfile_path: data.zip
+  test_year: "2014"
+  train_batch_size: 8
+  eval_batch_size: 8
+  num_workers: 12
+  scale_aug: true
