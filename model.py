@@ -12,6 +12,7 @@ from util import ExpRateRecorder
 class LitQwen3VL(pl.LightningModule):
     def __init__(
             self,
+            train_config,
             model_name_or_path: str = "Qwen/Qwen3-VL-2B-Instruct",
     ):
         super().__init__()
@@ -115,7 +116,7 @@ class LitQwen3VL(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = optim.AdamW(
             self.parameters(),
-            lr=self.hparams.learning_rate,
+            lr=self.hparams.train_config.learning_rate,
             weight_decay=1e-4,
         )
 
@@ -123,7 +124,7 @@ class LitQwen3VL(pl.LightningModule):
             optimizer,
             mode="max",
             factor=0.25,
-            patience=self.hparams.patience // self.trainer.check_val_every_n_epoch,
+            patience=self.hparams.train_config.patience // self.trainer.check_val_every_n_epoch,
         )
         scheduler = {
             "scheduler": reduce_scheduler,
