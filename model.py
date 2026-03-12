@@ -45,18 +45,21 @@ class LitQwen3VL(pl.LightningModule):
 
     def training_step(self, batch, _):
         model_inputs = self._prepare_batch(batch, is_inference=False)
+        bz = model_inputs["input_ids"].size(0)
         outputs = self(**model_inputs)
         loss = outputs.loss
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True, batch_size=bz)
         return loss
 
     @torch.inference_mode()
     def validation_step(self, batch, _):
         # Tính loss bình thường
         model_inputs = self._prepare_batch(batch, is_inference=False)
+        bz = model_inputs["input_ids"].size(0)
+
         outputs = self(**model_inputs)
         val_loss = outputs.loss
-        self.log("val_loss", val_loss, on_epoch=True, prog_bar=True, logger=True)
+        self.log("val_loss", val_loss, on_epoch=True, prog_bar=True, logger=True, batch_size=bz)
         # ====== Inference để tính ExpRate ======
         model_inputs_gen = self._prepare_batch(batch, is_inference=True)
 
@@ -79,7 +82,7 @@ class LitQwen3VL(pl.LightningModule):
 
         self.log(
             "val_ExpRate", self.exprate_recorder,
-            prog_bar=True, on_step=False, on_epoch=True, sync_dist=True
+            prog_bar=True, on_step=False, on_epoch=True, sync_dist=True, batch_size=bz
         )
 
     @torch.inference_mode()
