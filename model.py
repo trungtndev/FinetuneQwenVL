@@ -48,35 +48,38 @@ class LitQwen3VL(pl.LightningModule):
         # self.model = get_peft_model(self.model, lora_config)
         # self.model.print_trainable_parameters()
 
-        self.model = Qwen3VLForConditionalGeneration(Qwen3VLConfig(
-            text_config={
-                "hidden_size": 256,
-                "intermediate_size": 1024,
-                "num_hidden_layers": 4,
+        self.model = Qwen3VLForConditionalGeneration(
+            config=Qwen3VLConfig(
+                text_config={
+                    "hidden_size": 128,
+                    "intermediate_size": 512,
+                    "num_hidden_layers": 4,
 
-                "head_dim": 32,
-                "num_attention_heads": 8,
-                "num_key_value_heads": 8,
-                "rope_scaling": {
-                    "mrope_interleaved": True,
-                    "mrope_section": [
-                        24,
-                        20,
-                        20
-                    ],
-                    "rope_theta": 5000000,
-                    "rope_type": "default"
+                    "head_dim": 32,
+                    "num_attention_heads": 8,
+                    "num_key_value_heads": 8,
+                    "rope_scaling": {
+                        "mrope_interleaved": True,
+                        "mrope_section": [
+                            24,
+                            20,
+                            20
+                        ],
+                        "rope_theta": 5000000,
+                        "rope_type": "default"
+                    },
                 },
-            },
-            vision_config={
-                'depth': 8,
-                "deepstack_visual_indexes": [1, 2, 4, 6],
-                "hidden_size": 256,
-                "intermediate_size": 1024,
-                "num_heads": 8,
-                "out_hidden_size": 256,
-            }
-        ))
+
+                vision_config={
+                    'depth': 4,
+                    "deepstack_visual_indexes": [2, 4],
+                    "hidden_size": 128,
+                    "intermediate_size": 512,
+                    "num_heads": 8,
+                    "out_hidden_size": 128,
+                }
+            )
+        )
         self.processor = AutoProcessor.from_pretrained(
             "Qwen/Qwen3-VL-2B-Instruct",
             trust_remote_code=True
