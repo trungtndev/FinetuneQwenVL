@@ -71,8 +71,8 @@ class LitQwen3VL(pl.LightningModule):
                 },
 
                 vision_config={
-                    'depth': 4,
-                    "deepstack_visual_indexes": [2, 4],
+                    'depth': 5,
+                    "deepstack_visual_indexes": [1, 2, 3, 4],
                     "hidden_size": 128,
                     "intermediate_size": 512,
                     "num_heads": 8,
