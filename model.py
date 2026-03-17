@@ -34,11 +34,11 @@ class LitQwen3VL(pl.LightningModule):
             lora_alpha=32,  # Hệ số scale
             target_modules=[
                 # Encoder
-                # "proj", "qkv",
-                # "linear_fc1", "linear_fc2",
+                "proj", "qkv",
+                "linear_fc1", "linear_fc2",
                 # Decoder
                 "q_proj", "k_proj", "v_proj", "o_proj",
-                # "gate_proj", "up_proj", "down_proj"
+                "gate_proj", "up_proj", "down_proj"
             ],
             lora_dropout=0.05,
             bias="none",
