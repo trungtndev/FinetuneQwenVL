@@ -1,7 +1,7 @@
 import zipfile
 
 from torch import optim
-from transformers import Qwen3VLForConditionalGeneration, AutoProcessor
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, Qwen3VLConfig
 from PIL import Image
 import torch
 from peft import LoraConfig, get_peft_model
@@ -18,35 +18,69 @@ class LitQwen3VL(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        self.model = Qwen3VLForConditionalGeneration.from_pretrained(
-            model_name_or_path,
-            trust_remote_code=True
-        )
+        # self.model = Qwen3VLForConditionalGeneration.from_pretrained(
+        #     model_name_or_path,
+        #     trust_remote_code=True
+        # )
+        # self.processor = AutoProcessor.from_pretrained(
+        #     model_name_or_path,
+        #     trust_remote_code=True
+        # )
+        #
+        # self.exprate_recorder = ExpRateRecorder()
+        #
+        # lora_config = LoraConfig(
+        #     r=16,
+        #     lora_alpha=32,  # Hệ số scale
+        #     target_modules=[
+        #         # Encoder
+        #         # "proj",
+        #         "qkv",
+        #         # "linear_fc1", "linear_fc2",
+        #         # Decoder
+        #         "q_proj", "k_proj", "v_proj", "o_proj",
+        #         # "gate_proj", "up_proj", "down_proj"
+        #     ],
+        #     lora_dropout=0.05,
+        #     bias="none",
+        #     task_type="CAUSAL_LM"
+        # )
+        # self.model = get_peft_model(self.model, lora_config)
+        # self.model.print_trainable_parameters()
+
+        self.model = Qwen3VLForConditionalGeneration(Qwen3VLConfig(
+            text_config={
+                "hidden_size": 256,
+                "intermediate_size": 1024,
+                "num_hidden_layers": 4,
+
+                "head_dim": 32,
+                "num_attention_heads": 8,
+                "num_key_value_heads": 8,
+                "rope_scaling": {
+                    "mrope_interleaved": True,
+                    "mrope_section": [
+                        24,
+                        20,
+                        20
+                    ],
+                    "rope_theta": 5000000,
+                    "rope_type": "default"
+                },
+            },
+            vision_config={
+                'depth': 8,
+                "deepstack_visual_indexes": [1, 2, 4, 6],
+                "hidden_size": 256,
+                "intermediate_size": 1024,
+                "num_heads": 8,
+                "out_hidden_size": 256,
+            }
+        ))
         self.processor = AutoProcessor.from_pretrained(
-            model_name_or_path,
+            "Qwen/Qwen3-VL-2B-Instruct",
             trust_remote_code=True
         )
-
-        self.exprate_recorder = ExpRateRecorder()
-
-        lora_config = LoraConfig(
-            r=16,
-            lora_alpha=32,  # Hệ số scale
-            target_modules=[
-                # Encoder
-                # "proj",
-                "qkv",
-                # "linear_fc1", "linear_fc2",
-                # Decoder
-                "q_proj", "k_proj", "v_proj", "o_proj",
-                # "gate_proj", "up_proj", "down_proj"
-            ],
-            lora_dropout=0.05,
-            bias="none",
-            task_type="CAUSAL_LM"
-        )
-        self.model = get_peft_model(self.model, lora_config)
-        self.model.print_trainable_parameters()
 
     def forward(self, *args, **kwargs):
         return self.model(*args, **kwargs)
