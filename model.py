@@ -35,10 +35,10 @@ class LitQwen3VL(pl.LightningModule):
             target_modules=[
                 # Encoder
                 "proj", "qkv",
-                "linear_fc1", "linear_fc2",
+                # "linear_fc1", "linear_fc2",
                 # Decoder
                 "q_proj", "k_proj", "v_proj", "o_proj",
-                "gate_proj", "up_proj", "down_proj"
+                # "gate_proj", "up_proj", "down_proj"
             ],
             lora_dropout=0.05,
             bias="none",
