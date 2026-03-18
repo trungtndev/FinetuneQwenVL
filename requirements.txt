@@ -1,0 +1,14 @@
+torch==2.7.0
+torchvision==0.22.0
+pillow==10.3.0
+pytorch-lightning==2.5.0
+torchmetrics==1.8.0
+numpy==1.26.4
+sconf
+wandb
+transformers==5.2.0
+peft==0.18.1
+opencv-python==4.10.0.84
+opencv-python-headless==4.10.0.84
+albumentations==2.0.8
+matplotlib-inline==0.1.6
