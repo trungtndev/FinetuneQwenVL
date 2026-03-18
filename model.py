@@ -24,7 +24,8 @@ class LitQwen3VL(pl.LightningModule):
         )
         self.processor = Qwen3VLProcessor.from_pretrained(
             model_name_or_path,
-            trust_remote_code=True
+            trust_remote_code=True,
+            padding_side='left',
         )
 
         self.exprate_recorder = ExpRateRecorder()
