@@ -186,11 +186,12 @@ class LitQwen3VL(pl.LightningModule):
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
     def _prepare_batch(self, batch_data, is_inference=False):
-        """Hàm biến data thô thành Tensor ngay trên GPU"""
         images = batch_data["images"]
         captions = batch_data["captions"]
 
         texts = []
+        prefix_texts = []
+
         for img, caption in zip(images, captions):
             messages = [
                 {
@@ -213,31 +214,43 @@ class LitQwen3VL(pl.LightningModule):
             )
             texts.append(text)
 
-        # 1. Gọi processor tạo tensor (Lúc này đang ở trong Step)
+            if not is_inference:
+                prefix_messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image", "image": img},
+                            {"type": "text", "text": "Convert the handwritten math expression image to LaTeX."},
+                        ]
+                    }
+                ]
+
+                prefix_text = self.processor.apply_chat_template(
+                    prefix_messages,
+                    tokenize=False,
+                    add_generation_prompt=True
+                )
+                prefix_texts.append(prefix_text)
+
         batch_inputs = self.processor(
             text=texts,
             images=images,
             padding=True,
             return_tensors="pt"
-        )
+        ).to(self.device)
 
-        # 2. Đẩy data lên thiết bị hiện tại (GPU)
-        batch_inputs = batch_inputs.to(self.device)
-
-        # 3. Tạo labels tính Loss cho lúc Train/Val
         if not is_inference:
             labels = batch_inputs["input_ids"].clone()
+            prefix_ids_batch = self.processor.tokenizer(
+                prefix_texts,
+                add_special_tokens=False,
+                padding=False
+            )["input_ids"]
+
             for i in range(labels.shape[0]):
+                assistant_start_idx = len(prefix_ids_batch[i])
+                labels[i, :assistant_start_idx] = -100
                 labels[i, batch_inputs["attention_mask"][i] == 0] = -100
-                label_list = labels[i].tolist()
-
-                start_tags = [idx for idx, val in enumerate(label_list) if val == 151644]
-                if len(start_tags) >= 2:
-                    assistant_start_idx = start_tags[-1]
-                    labels[i, :assistant_start_idx + 3] = -100
-                else:
-                    labels[i, :] = -100
-
             batch_inputs["labels"] = labels
 
         return batch_inputs
