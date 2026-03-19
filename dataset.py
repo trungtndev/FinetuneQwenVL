@@ -137,10 +137,6 @@ class CROHMEDatamodule(pl.LightningDataModule):
         self.num_workers = num_workers
         self.scale_aug = scale_aug
         self.val_subset_size = val_subset_size
-        # self.processor = AutoProcessor.from_pretrained(
-        #     "Qwen/Qwen3-VL-2B-Instruct",
-        #     trust_remote_code=True
-        # )
         print(f"Load data from: {self.zipfile_path}")
 
     def setup(self, stage: Optional[str] = None) -> None:
