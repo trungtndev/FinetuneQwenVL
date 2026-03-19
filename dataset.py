@@ -64,7 +64,7 @@ class CROHMEDataset(Dataset):
         if is_train and scale_aug:
             trans_list.append(AlbScaleAugmentation(K_MIN, K_MAX))
 
-        trans_list.append(ResizeLimit(256, 768))
+        # trans_list.append(ResizeLimit(256, 768))
         self.transform = A.Compose(trans_list)
 
     def __getitem__(self, idx):
