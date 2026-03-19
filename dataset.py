@@ -92,7 +92,9 @@ def extract_data(archive, dir_name: str):
         tmp = line.decode().strip().split()
         img_name = tmp[0]
         formula = " ".join(tmp[1:])
-        data.append((img_name, f"{archive}/{dir_name}/img/{img_name}", formula))
+        data.append(
+            (img_name, f"{archive}/{dir_name}/img/{img_name}", formula)
+        )
 
     print(f"Extract data from: {dir_name}, with data size: {len(data)}")
 
