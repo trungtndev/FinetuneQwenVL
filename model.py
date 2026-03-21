@@ -1,7 +1,7 @@
 import zipfile
 
 from torch import optim
-from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, Qwen3VLConfig, Qwen3VLProcessor
+from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, Qwen3VLConfig, Qwen3VLProcessor, Qwen2Tokenizer
 from PIL import Image
 import torch
 from peft import LoraConfig, get_peft_model
@@ -137,7 +137,7 @@ class LitQwen3VL(pl.LightningModule):
 
         generated_ids = self.model.generate(
             **model_inputs,
-            max_new_tokens=256, num_beams=5, early_stopping=True, length_penalty=1.0
+            max_new_tokens=256, num_beams=3, early_stopping=True, length_penalty=1.0
         )
 
         generated_ids_trimmed = [
