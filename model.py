@@ -1,5 +1,6 @@
 import zipfile
 
+from timm.scheduler import CosineLRScheduler
 from torch import optim
 from transformers import Qwen3VLForConditionalGeneration, AutoProcessor, Qwen3VLConfig, Qwen3VLProcessor, Qwen2Tokenizer
 from PIL import Image
@@ -162,25 +163,21 @@ class LitQwen3VL(pl.LightningModule):
                     with zip_f.open(f"{img_base}.txt", "w") as f:
                         f.write(content)
 
+    def lr_scheduler_step(self, scheduler, optimizer_idx):
+        scheduler.step_update(self.global_step)
+
     def configure_optimizers(self):
         optimizer = optim.AdamW(
             self.parameters(),
             lr=self.hparams.train_config.learning_rate,
             weight_decay=1e-4,
         )
+        scheduler_optim = CosineLRScheduler(optimizer, **self.hparams.train_config.cosine_scheduler)
 
-        reduce_scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            mode="max",
-            factor=0.25,
-            patience=self.hparams.train_config.patience // self.trainer.check_val_every_n_epoch,
-        )
         scheduler = {
-            "scheduler": reduce_scheduler,
-            "monitor": "val_ExpRate",
-            "interval": "epoch",
-            "frequency": self.trainer.check_val_every_n_epoch,
-            "strict": True,
+            "scheduler": scheduler_optim,
+            "interval": "step",
+            "frequency": 1,
         }
 
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
